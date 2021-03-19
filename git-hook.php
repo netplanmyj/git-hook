@@ -35,6 +35,10 @@ logging($msg);
 
 function logging($msg)
 {
+    if (!WP_DEBUG) {
+        return;
+    }
+    
     $logfile = dirname(__FILE__) . '/git-hook.log';
     $msg = date("[Y-m-d H:i:s]")
         . $_SERVER['REMOTE_ADDR']
