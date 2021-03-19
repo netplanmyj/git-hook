@@ -1,23 +1,49 @@
 <?php
-$LOG_FILE = dirname(__FILE__).'/git-hook.log';
+require_once dirname(__FILE__) . '/wp-config.php';
 
-if (isset($_GET['key'])
-  && $_GET['key'] === $SECRET_KEY
-  && isset($_POST['payload'])) {
-    $payload = json_decode($_POST['payload'], true);
-    if ($payload['ref'] === 'refs/heads/master') {
-        `cd netplan.co.jp/public_html/wp-content/themes && git pull origin master`;
-        file_put_contents(
-            $LOG_FILE,
-            date("[Y-m-d H:i:s]")." ".$_SERVER['REMOTE_ADDR']." git pulled: ".$payload['head_commit']['message']."\n",
-            FILE_APPEND|LOCK_EX
-        );
-    }
-} else {
-  /* test */
+$header = getallheaders();
+$contents = file_get_contents("php://input");
+$hmac = hash_hmac('sha1', $contents, GIT_HOOK_SECRET_KEY);
+
+if (!isset($header['X-Hub-Signature'])
+  || $header['X-Hub-Signature'] !== 'sha1=' . $hmac
+  ) {
+    logging("X-Hub-Signature error.");
+    return;
+}
+
+if (!isset($_POST['payload'])) {
+    logging("Payload is not set.");
+    return;
+}
+
+$payload = stripslashes($_POST['payload']);
+$payload = json_decode($payload, true);
+
+if ($payload['ref'] !== 'refs/heads/main') {
+    $msg = "invalid access: "
+    . $payload['ref'];
+    logging($msg);
+    return;
+}
+
+chdir(dirname(__FILE__) . '/wp-content/themes/ttone-child');
+exec('git pull -u origin main');
+$msg = "git pulled: "
+  . $payload['head_commit']['message'];
+logging($msg);
+
+function logging($msg)
+{
+    $logfile = dirname(__FILE__) . '/git-hook.log';
+    $msg = date("[Y-m-d H:i:s]")
+        . $_SERVER['REMOTE_ADDR']
+        . " "
+        . $msg
+        . "\n";
     file_put_contents(
-        $LOG_FILE,
-        date("[Y-m-d H:i:s]")." invalid access: ".$_SERVER['REMOTE_ADDR']."\n",
+        $logfile,
+        $msg,
         FILE_APPEND|LOCK_EX
     );
 }
