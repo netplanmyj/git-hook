@@ -1,0 +1,11 @@
+tmp/
+wp-admin/
+wp-content/
+wp-includes/
+.htaccess
+license.txt
+xmlrpc.php
+/index.php
+/wp-*.php
+*.code-workspace
+*.html
