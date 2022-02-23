@@ -7,7 +7,14 @@
 下記の記事を参考にしたと思う。  
 - [GitHubにpushしたらブランチ毎に自動デプロイする仕組みをエックスサーバー上に作ってみた](https://yosiakatsuki.net/blog/github-auto-deploy/)
 
-WPのバージョンアップに伴い `ttone-child` を削除するので一旦 `git-hook.php` をはずします。
+## サーバー側スクリプトを削除
+WPのバージョンアップに伴い `ttone-child` を削除するので `xserver` に設置した `git-hook.php` をはずします。
 ```
 public_html/git-hook.php
+```
+## GitHubのwebhookを削除
+テーマリポジトリ settings -> Webhooks  
+pauload url  
+```
+(mydomain)/git-hook.php
 ```
